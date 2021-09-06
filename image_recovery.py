@@ -6,8 +6,9 @@ import re
 import matplotlib.pyplot as plt
 import sys
 
-# Every image is gonna be represented by a Image class
 class Image:
+  """Represents an image with the properties required for the problem"""
+
   filename = ''
   contents = []
   histograms = {
@@ -15,7 +16,7 @@ class Image:
     "green": np.zeros(256, np.uint),
     "blue": np.zeros(256, np.uint)
   }
-  pdf = {
+  pdfs = {
     "red": np.zeros(256, np.uint),
     "green": np.zeros(256, np.uint),
     "blue": np.zeros(256, np.uint)
@@ -28,37 +29,58 @@ class Image:
       self.create_histogram()
       self.create_pdfs()
 
-  """
-    Initialize Image's histograms
-  """
-  def create_histogram(self) -> None:
-    self.histograms['red'][self.contents[:, :, 0]] += 1
-    self.histograms['green'][self.contents[:, :, 1]] += 1
-    self.histograms['blue'][self.contents[:, :, 2]] += 1
+  def create_histogram(self, gray=False) -> None:
+    """Create Image's histograms"""
+    
+    if not gray:
+      self.histograms['red'][self.contents[:, :, 0]] += 1
+      self.histograms['green'][self.contents[:, :, 1]] += 1
+      self.histograms['blue'][self.contents[:, :, 2]] += 1
+    else:
+      self.histograms['gray'][self.contents[:, :]] += 1
 
-  def create_pdfs(self):
+  def create_pdfs(self) -> None:
+    """Create Image's PDFs (Probability Density Function)"""
+    
     histogram_length = self.histograms['red'].shape[0]
 
-    self.pdf['red'] = self.histograms['red'] / histogram_length
-    self.pdf['green'] = self.histograms['green'] / histogram_length
-    self.pdf['blue'] = self.histograms['blue'] / histogram_length
+    self.pdfs['red'] = self.histograms['red'] / histogram_length
+    self.pdfs['green'] = self.histograms['green'] / histogram_length
+    self.pdfs['blue'] = self.histograms['blue'] / histogram_length
 
 # --------------------------------------------------------------------------------------------
-def open_images_w_path(path: str):
+def open_images_w_path(path: str) -> list[str]:
   if (not os.path.exists(path)):
-    # raise exception
-    pass
+    raise FileNotFoundError(f'Caminho {path} não existente.')
   
   return os.listdir(path)
 
-def initialize_images(search_image: str, files: list, path: str) -> list:
+def initialize_images(search_image: str, files: list, path: str) -> list[Image]:
   return [Image(file, io.imread(f'{path}/{file}')) for file in files if file != search_image]
   
-def initialize_search_image(search_image, path):
+def initialize_search_image(search_image, path) -> Image:
   return Image(search_image, io.imread(f'{path}/{search_image}'))
 
-def extract_images_from_vistex_zip():
-  # Abra o zip e coloque as imagens em uma lista
+# --------------------------------------------------------------------------------------------
+def n_most_similar_imgs(n, imgs_w_distances: dict) -> list[str]:
+  pass
+
+def euclidian_distance(pe, pi) -> float:
+  pass
+
+def most_similar_imgs(approach: str, search_img: Image, imgs_to_be_searched: list[Image], number_results: int) -> list[str]:
+  imgs_w_distances = []
+  
+  for img in imgs_to_be_searched:
+    imgs_w_distances.append({
+      'img': img.filename,
+      'distance': approach(search_img.pdfs, img.pdfs)
+    })
+
+  return n_most_similar_imgs(number_results, imgs_w_distances)
+
+def extract_images_from_vistex_zip() -> None:
+  """Abra o zip e coloque as imagens em uma lista"""
 
   if (not os.path.exists('Vistex')):
     with ZipFile('Vistex.zip', 'r') as zip:
@@ -86,25 +108,33 @@ if __name__ == "__main__":
   # - Inteiro N que indica o número de imagens parecidas a serem retornadas
 
   print("Syntax to use this tool:\n")
-  print("python image_recovery <search_image_name> <images_path> <number_of_images_to_be_recovered>", end="\n\n")
+  print("python image_recovery <images_path> <search_image_name> <number_of_images_to_be_recovered>", end="\n\n")
 
-  search_image = sys.argv[1]
-  images_path = sys.argv[2]
+  images_path = sys.argv[1]
+  search_image = sys.argv[2]
   number_results = sys.argv[3]
   
-  # Initialize all images with it's histograms and pdfs
   try:
+    # Initialize all images with it's histograms and pdfs
     files = open_images_w_path(images_path)
 
-    imgs = initialize_images(search_image, files, images_path)
     search_image = initialize_search_image(search_image, images_path)
+    imgs_to_be_searched = initialize_images(search_image, files, images_path)
     
     # Faça a recuperação das imagens usando diferentes métodos
     # Distância Euclidiana
+    ed_similar_imgs = most_similar_imgs('ed', search_image, imgs_to_be_searched, number_results)
 
     # Chi-quadrado
+    s_chi_similar_imgs = most_similar_imgs('square_chi', search_image, imgs_to_be_searched, number_results)
 
     # Chi modificado
+    mod_chi_similar_imgs = most_similar_imgs('mod_chi', search_image, imgs_to_be_searched, number_results)
+
+    # Avaliar resultados (porcentagem de classificação correta)
+    
+
+
 
   except FileNotFoundError as e:
     print(e)
