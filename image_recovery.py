@@ -4,7 +4,7 @@ import os
 import sys
 from image import Image
 
-# --------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------------
 def open_images_w_path(path: str) -> list[str]:
   if (not os.path.exists(path)):
     raise FileNotFoundError(f'Caminho {path} não existente.')
@@ -17,20 +17,23 @@ def initialize_images(search_image: str, files: list, path: str) -> list[Image]:
 def initialize_search_image(search_image, path) -> Image:
   return Image(search_image, io.imread(f'{path}/{search_image}'))
 
-# --------------------------------------------------------------------------------------------
-def n_most_similar_imgs(n: int, imgs_to_be_searched: list[Image]) -> list[str]:
-  return sorted(imgs_to_be_searched, key=lambda x: x.distances['red'])[:n]
-
+# ------------------------------------------------------------------------------------------------------------------------------------------
 def euclidian_distance(pe, pi) -> float:
   return np.sum(np.square(pe - pi))
+
+def square_chi(pe, pi) -> float:
+  pass
+
+# TODO
+# Criar consts para dizer qual método usar para calcular as distâncias
 
 def most_similar_imgs(approach, search_img: Image, imgs_to_be_searched: list[Image], number_results: int) -> list[str]:  
   for img in imgs_to_be_searched:
     img.calc_pdfs_distances(search_img.pdfs, approach)
 
-  return n_most_similar_imgs(number_results, imgs_to_be_searched)
+  return sorted(imgs_to_be_searched, key=lambda x: x.distances['red'])[:number_results]
 
-# --------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
   # Entradas:
   # - Imagem de busca
@@ -54,7 +57,7 @@ if __name__ == "__main__":
     files = open_images_w_path(images_path)
 
     search_image = initialize_search_image(search_image, images_path)
-    imgs_to_be_searched = initialize_images(search_image, files, images_path)
+    imgs_to_be_searched = initialize_images(search_image.filename, files, images_path)
     
     # Faça a recuperação das imagens usando diferentes métodos
     # Distância Euclidiana
