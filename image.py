@@ -55,6 +55,12 @@ class Image:
     self.distances['green'] = approach(search_img_pdfs['green'], self.pdfs['green'])
     self.distances['blue'] = approach(search_img_pdfs['blue'], self.pdfs['blue'])
 
+  def class_name(self) -> str:
+    return self.filename.split('_')[0]
+
+  def image_name(self) -> str:
+    return self.filename.split('_')[1]
+
   def plot_histogram(histogram: np.array, color: str):
     indexes = np.arange(np.size(histogram))
     fig = plt.figure()
