@@ -1,5 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from heuristic import DistanceHeuristic as dh,\
+                      euclidian_distance,\
+                      square_chi
 
 class Image:
   """Represents an image with the properties required for the problem"""
@@ -12,9 +15,9 @@ class Image:
     'blue': np.zeros(256, np.uint)
   }
   pdfs = {
-    'red': np.zeros(256, np.uint),
-    'green': np.zeros(256, np.uint),
-    'blue': np.zeros(256, np.uint)
+    'red': np.zeros(256, np.float),
+    'green': np.zeros(256, np.float),
+    'blue': np.zeros(256, np.float)
   }
   distances = {
     'red': 0.0,
@@ -22,20 +25,28 @@ class Image:
     'blue': 0.0
   }
 
-  def __init__(self, filename: str, contents: list) -> None:
+  def __init__(self, filename: str, contents) -> None:
       self.filename = filename
+      # self.contents = contents
       self.contents = np.array(contents, np.uint8)
 
-      self.create_histogram()
+      self.create_histograms()
       self.create_pdfs()
 
-  def create_histogram(self, gray=False) -> None:
+  def create_histograms(self, gray=False) -> None:
     """Create Image's histograms"""
     
     if not gray:
-      self.histograms['red'][self.contents[:, :, 0]] += 1
-      self.histograms['green'][self.contents[:, :, 1]] += 1
-      self.histograms['blue'][self.contents[:, :, 2]] += 1
+      # self.histograms['red'][self.contents[:, :, 0][0]] += 1
+      # self.histograms['green'][self.contents[:, :, 1][0]] += 1
+      # self.histograms['blue'][self.contents[:, :, 2][0]]+= 1
+      red_pixels = self.contents[:, :, 0][0]
+      green_pixels = self.contents[:, :, 1][0]
+      blue_pixels = self.contents[:, :, 2][0]
+      
+      self.histograms['red'] = np.array([np.sum(red_pixels == i) for i in range(256)])
+      self.histograms['green'] = np.array([np.sum(green_pixels == i) for i in range(256)])
+      self.histograms['blue'] = np.array([np.sum(blue_pixels == i) for i in range(256)])
     else:
       self.histograms['gray'][self.contents[:, :]] += 1
 
@@ -48,12 +59,13 @@ class Image:
     self.pdfs['green'] = self.histograms['green'] / histogram_length
     self.pdfs['blue'] = self.histograms['blue'] / histogram_length
 
-  def calc_pdfs_distances(self, search_img_pdfs, approach) -> None:
+  def calc_pdfs_distances(self, img_pdfs, approach) -> None:
     """Calculate Image's PDF's distances to another Image's PDFs"""
     
-    self.distances['red'] = approach(search_img_pdfs['red'], self.pdfs['red'])
-    self.distances['green'] = approach(search_img_pdfs['green'], self.pdfs['green'])
-    self.distances['blue'] = approach(search_img_pdfs['blue'], self.pdfs['blue'])
+    if (approach == dh.ED):
+      self.distances['red'] = euclidian_distance(img_pdfs['red'], self.pdfs['red'])
+      self.distances['green'] = euclidian_distance(img_pdfs['green'], self.pdfs['green'])
+      self.distances['blue'] = euclidian_distance(img_pdfs['blue'], self.pdfs['blue'])
 
   def class_name(self) -> str:
     return self.filename.split('_')[0]
@@ -61,15 +73,12 @@ class Image:
   def image_name(self) -> str:
     return self.filename.split('_')[1]
 
-  def plot_histogram(histogram: np.array, color: str):
-    indexes = np.arange(np.size(histogram))
-    fig = plt.figure()
-    ax = fig.add_axes([0,0,1,1])
-    ax.bar(indexes, histogram, edgecolor='black', color=color)
-    ax.set_ylabel('Oin')
-    # ax.set_title(f'{color.capitalize()} Channel Histogram')
-    ax.set_title('Oin')
-    # ax.set_xticks(indexes, ('G1', 'G2', 'G3', 'G4'))
-    ax.set_yticks(np.arange(0, 81, 10))
-    # ax.legend(labels=['Men', 'Women'])
+  def plot_histograms(self, color: str):
+    indexes = np.arange(np.size(self.histograms[color]))
+    # plt.hist(x=self.contents[:, :, 1][0], bins='auto', color=color, alpha=0.7, rwidth=0.85)    
+    plt.bar(indexes, self.histograms[color], width=0.9, color=color)
+
+    plt.ylabel('Frequência')
+    plt.xlabel('Valor')
+    plt.title(f'{color.capitalize()} Channel Histogram')
     plt.show()

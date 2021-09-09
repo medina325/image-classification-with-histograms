@@ -1,5 +1,5 @@
-import numpy as np
 from image import Image
+from heuristic import DistanceHeuristic as dh
 from util import open_images_w_path,\
                  initialize_images,\
                  initialize_search_image,\
@@ -7,20 +7,11 @@ from util import open_images_w_path,\
 
 # ------------------------------------------------------------------------------------------------------------------------------------------
 
-def euclidian_distance(pe, pi) -> float:
-  return np.sum(np.square(pe - pi))
-
-def square_chi(pe, pi) -> float:
-  pass
-
-# TODO
-# Criar consts para dizer qual método usar para calcular as distâncias
-
 def n_most_similar_imgs(approach, search_img: Image, imgs_to_be_searched: list[Image], number_results: int) -> list[Image]:  
   for img in imgs_to_be_searched:
     img.calc_pdfs_distances(search_img.pdfs, approach)
-
-  return sorted(imgs_to_be_searched, key=lambda x: x.distances['red'])[:number_results]
+  
+  return sorted(imgs_to_be_searched, key=lambda x: (x.distances['red'] + x.distances['green'] + x.distances['blue']) / 3)[:number_results]
 
 def get_accuracy(search_image: Image, n_most_similar_images: list[Image]):
   """Calculate accuracy of n most similar images obtained"""
@@ -40,13 +31,13 @@ if __name__ == "__main__":
   images_path, search_image, number_results = get_user_input()
   
   try:
-    files = open_images_w_path(images_path)
+    filenames = open_images_w_path(images_path)
 
     search_image = initialize_search_image(search_image, images_path)
-    imgs_to_be_searched = initialize_images(search_image.filename, files, images_path)
+    imgs_to_be_searched = initialize_images(search_image.filename, filenames, images_path)
     
     # Distância Euclidiana
-    ed_similar_imgs = n_most_similar_imgs(euclidian_distance, search_image, imgs_to_be_searched, number_results)
+    ed_similar_imgs = n_most_similar_imgs(dh.ED, search_image, imgs_to_be_searched, number_results)
 
     # Chi-quadrado
     # s_chi_similar_imgs = n_most_similar_imgs('square_chi', search_image, imgs_to_be_searched, number_results)
@@ -56,6 +47,7 @@ if __name__ == "__main__":
     
     accuracy = get_accuracy(search_image, ed_similar_imgs)
     
+    print([img.distances for img in ed_similar_imgs], sep="\n" ,end="\n")
     print(f'{accuracy}%')
 
   except FileNotFoundError as e:
