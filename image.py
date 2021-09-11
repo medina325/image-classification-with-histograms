@@ -1,41 +1,29 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from heuristic import DistanceHeuristic as dh,\
-                      euclidian_distance,\
-                      square_chi
+from matplotlib.gridspec import GridSpec
+from heuristic import DistanceHeuristic as dh
 
 class Image:
   """Represents an image with the properties required for the problem"""
-
-  filename = ''
-  contents = []
-  histograms = {
-    'red': np.zeros(256, np.uint),
-    'green': np.zeros(256, np.uint),
-    'blue': np.zeros(256, np.uint)
-  }
-  pdfs = {
-    'red': np.zeros(256, np.float),
-    'green': np.zeros(256, np.float),
-    'blue': np.zeros(256, np.float)
-  }
-  distances = {
-    'red': 0.0,
-    'green': 0.0,
-    'blue': 0.0
-  }
-
+  
   def __init__(self, filename: str, contents) -> None:
       self.filename = filename
       # self.contents = contents
       self.contents = np.array(contents, np.uint8)
 
-      self.create_histograms()
-      self.create_pdfs()
+      self.histograms = self.create_histograms()
+      self.pdfs = self.create_pdfs()
 
-  def create_histograms(self, gray=False) -> None:
+      self.distances = {
+        'red': 0.0,
+        'green': 0.0,
+        'blue': 0.0
+      }
+      
+  def create_histograms(self, gray=False) -> dict:
     """Create Image's histograms"""
     
+    histograms = []
     if not gray:
       # self.histograms['red'][self.contents[:, :, 0][0]] += 1
       # self.histograms['green'][self.contents[:, :, 1][0]] += 1
@@ -43,42 +31,56 @@ class Image:
       red_pixels = self.contents[:, :, 0][0]
       green_pixels = self.contents[:, :, 1][0]
       blue_pixels = self.contents[:, :, 2][0]
-      
-      self.histograms['red'] = np.array([np.sum(red_pixels == i) for i in range(256)])
-      self.histograms['green'] = np.array([np.sum(green_pixels == i) for i in range(256)])
-      self.histograms['blue'] = np.array([np.sum(blue_pixels == i) for i in range(256)])
-    else:
-      self.histograms['gray'][self.contents[:, :]] += 1
 
-  def create_pdfs(self) -> None:
+      histograms = {
+        'red': np.array([np.sum(red_pixels == i) for i in range(256)]),
+        'green': np.array([np.sum(green_pixels == i) for i in range(256)]),
+        'blue': np.array([np.sum(blue_pixels == i) for i in range(256)])
+      }
+    else:
+      gray_pixels = self.contents[:, :]
+      histograms = {
+        'gray': np.array([np.sum(gray_pixels == i) for i in range(256)])
+      }
+    
+    return histograms
+
+  def create_pdfs(self) -> dict:
     """Create Image's PDFs (Probability Density Function)"""
     
-    histogram_length = self.histograms['red'].shape[0]
+    img_size = self.contents.shape[0]
 
-    self.pdfs['red'] = self.histograms['red'] / histogram_length
-    self.pdfs['green'] = self.histograms['green'] / histogram_length
-    self.pdfs['blue'] = self.histograms['blue'] / histogram_length
+    return {
+      'red': self.histograms['red'] / img_size,
+      'green': self.histograms['green'] / img_size,
+      'blue': self.histograms['blue'] / img_size
+    }
 
   def calc_pdfs_distances(self, img_pdfs, approach) -> None:
     """Calculate Image's PDF's distances to another Image's PDFs"""
     
     if (approach == dh.ED):
-      self.distances['red'] = euclidian_distance(img_pdfs['red'], self.pdfs['red'])
-      self.distances['green'] = euclidian_distance(img_pdfs['green'], self.pdfs['green'])
-      self.distances['blue'] = euclidian_distance(img_pdfs['blue'], self.pdfs['blue'])
-
+      self.distances = dh.euclidian_distance(img_pdfs, self.pdfs)
+      
   def class_name(self) -> str:
     return self.filename.split('_')[0]
 
   def image_name(self) -> str:
     return self.filename.split('_')[1]
 
-  def plot_histograms(self, color: str):
-    indexes = np.arange(np.size(self.histograms[color]))
-    # plt.hist(x=self.contents[:, :, 1][0], bins='auto', color=color, alpha=0.7, rwidth=0.85)    
-    plt.bar(indexes, self.histograms[color], width=0.9, color=color)
+  def plot_histograms(self):
+    x_axis = np.arange(256)
 
-    plt.ylabel('Frequência')
-    plt.xlabel('Valor')
-    plt.title(f'{color.capitalize()} Channel Histogram')
+    def make_subplot(color, sub):
+      plt.subplot(*sub)
+      plt.bar(x_axis, self.histograms[color], width=0.9, color=color)
+      plt.title(f'{color.capitalize()} Channel Histogram')
+      plt.ylabel('Frequência')
+      plt.xlabel('Valor')
+
+    # plt.hist(x=self.contents[:, :, 1][0], bins='auto', color=color, alpha=0.7, rwidth=0.85)    
+    make_subplot('red', (1,3,1))
+    make_subplot('green', (1,3,2))
+    make_subplot('blue', (1,3,3))
+    
     plt.show()

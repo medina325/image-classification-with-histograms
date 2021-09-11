@@ -1,3 +1,4 @@
+import numpy as np
 from image import Image
 from heuristic import DistanceHeuristic as dh
 from util import open_images_w_path,\

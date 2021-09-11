@@ -20,6 +20,6 @@ def open_images_w_path(path: str) -> list[str]:
 
 def initialize_images(search_image: str, filenames: list, path: str) -> list[Image]:
   return [Image(f, io.imread(os.path.join(path, f))) for f in filenames if f != search_image]
-
+  
 def initialize_search_image(search_image: str, path: str) -> Image:
   return Image(search_image, io.imread(os.path.join(path, search_image)))
