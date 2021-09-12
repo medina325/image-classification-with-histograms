@@ -1,4 +1,3 @@
-import numpy as np
 from skimage import io
 import os
 import sys
@@ -31,11 +30,15 @@ def initialize_search_image(search_image: str, path: str, as_gray: bool) -> Imag
 
   return ColoredImage(search_image, io.imread(os.path.join(path, search_image), as_gray=False))
 
-def n_most_similar_imgs(approach, search_img: Image, imgs_to_be_searched: list[Image], number_results: int) -> list[Image]:  
-  for img in imgs_to_be_searched:
-    img.calc_pdfs_distances(search_img.pdfs, approach)
+def get_accuracy(search_image: Image, n_most_similar_images: list[Image]):
+  """Calculate accuracy of n most similar images obtained"""
   
-  if isinstance(search_img, GrayImage):
-    return sorted(imgs_to_be_searched, key=lambda img: img.distances['gray'])[:number_results]
+  search_image_class = search_image.class_name()
+  similar_img_classes = [img.class_name() for img in n_most_similar_images]
 
-  return sorted(imgs_to_be_searched, key=lambda img: (img.distances['red'] + img.distances['green'] + img.distances['blue']) / 3)[:number_results]
+  print(search_image_class)
+  print(similar_img_classes)
+
+  matches = sum([1 for img_class in similar_img_classes if img_class == search_image_class])
+  return matches / len(n_most_similar_images) * 100
+  

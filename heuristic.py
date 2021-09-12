@@ -20,13 +20,15 @@ class DistanceHeuristic(Enum):
     }
 
   def square_chi(pe, pi, gray) -> dict:
+    fix = 0.00000001
+
     if gray:
       return {
-        'gray': np.sum(np.square(pe['gray'] - pi['gray']) / (pe['gray'] + pi['gray'] + 0.0001))
+        'gray': np.sum(np.square(pe['gray'] - pi['gray']) / (pe['gray'] + pi['gray'] + fix))
       }
     
     return {
-      'red':   np.sum(np.square(pe['red'] - pi['red']) / (pe['red'] + pi['red'] + 0.00000001)),
-      'green': np.sum(np.square(pe['green'] - pi['green']) / (pe['green'] + pi['green'] + 0.000000001)),
-      'blue':  np.sum(np.square(pe['blue'] - pi['blue']) / (pe['blue'] + pi['blue'] + 0.000000001))
+      'red':   np.sum(np.square(pe['red'] - pi['red']) / (pe['red'] + pi['red'] + fix)),
+      'green': np.sum(np.square(pe['green'] - pi['green']) / (pe['green'] + pi['green'] + fix)),
+      'blue':  np.sum(np.square(pe['blue'] - pi['blue']) / (pe['blue'] + pi['blue'] + fix))
     }
