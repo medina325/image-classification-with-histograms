@@ -7,28 +7,23 @@ class DistanceHeuristic(Enum):
   ED = 0
   SC = 1
   
-  def euclidian_distance(pe, pi, gray) -> dict:
-    if gray:
-      return {
-        'gray': np.sum(np.square(pe['gray'] - pi['gray']))
-      }
+  def euclidian_distance(pe, pi) -> dict:
+    """Returns the Euclidian Distance for every given channel"""
 
-    return {
-      'red':   np.sum(np.square(pe['red'] - pi['red'])),
-      'green': np.sum(np.square(pe['green'] - pi['green'])),
-      'blue':  np.sum(np.square(pe['blue'] - pi['blue']))
-    }
+    distances = {}
 
-  def square_chi(pe, pi, gray) -> dict:
+    for key in pe.keys():
+      distances = distances | {key: np.sum(np.square(pe[key] - pi[key]))}
+      
+    return distances
+
+  def square_chi(pe, pi) -> dict:
+    """Returns the Square Chi Distance for every given channel"""
+
     fix = 0.00000001
+    distances = {}
 
-    if gray:
-      return {
-        'gray': np.sum(np.square(pe['gray'] - pi['gray']) / (pe['gray'] + pi['gray'] + fix))
-      }
-    
-    return {
-      'red':   np.sum(np.square(pe['red'] - pi['red']) / (pe['red'] + pi['red'] + fix)),
-      'green': np.sum(np.square(pe['green'] - pi['green']) / (pe['green'] + pi['green'] + fix)),
-      'blue':  np.sum(np.square(pe['blue'] - pi['blue']) / (pe['blue'] + pi['blue'] + fix))
-    }
+    for key in pe.keys():
+      distances = distances | {key: np.sum(np.square(pe[key] - pi[key]) / (pe[key] + pi[key] + fix))}
+
+    return distances

@@ -5,18 +5,13 @@ from image import *
 # ------------------------------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-  number_results, images_path, search_image, as_gray = get_user_input()
+  images_path, search_image, number_results = get_user_input()
 
   try:
     filenames = open_images_w_path(images_path)
 
-    search_image = initialize_search_image(search_image, images_path, as_gray)
-    imgs_to_be_searched = initialize_images(search_image.filename, filenames, images_path, as_gray)
-    
-    # search_image.plot_histograms()
-    # while True:
-    #   print("Escolha o método que deseja usar:")
-    #   appro
+    search_image = initialize_search_image(search_image, images_path)
+    imgs_to_be_searched = initialize_images(search_image.filename, filenames, images_path)
 
     # Distância Euclidiana
     ed_similar_imgs = search_image.n_most_similar_imgs(dh.ED, imgs_to_be_searched, number_results)
