@@ -21,12 +21,12 @@ if __name__ == "__main__":
 
     # Chi modificado
     # mod_chi_similar_imgs = n_most_similar_imgs('mod_chi', search_image, imgs_to_be_searched, number_results)
-    
-    accuracy_ed = get_accuracy(search_image, ed_similar_imgs)
-    accuracy_sc = get_accuracy(search_image, s_chi_similar_imgs)
-      
-    print(f'Acurácia ED: {accuracy_ed:.2f}%')
-    print(f'Acurácia SC: {accuracy_sc:.2f}%')
+
+    classification_ed = get_classification(ed_similar_imgs, number_results)
+    classification_sc = get_classification(s_chi_similar_imgs, number_results)
+
+    print(f"Classification: {classification_ed['class']}. Accuracy: {classification_ed['accuracy']:.2f}%")
+    print(f"Classification: {classification_sc['class']}. Accuracy: {classification_sc['accuracy']:.2f}%")
 
   except FileNotFoundError as e:
     print(e)

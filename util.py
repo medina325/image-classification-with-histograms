@@ -1,4 +1,4 @@
-from skimage import io
+import numpy as np
 import os
 import sys
 from image import Image
@@ -24,18 +24,13 @@ def initialize_images(search_image: str, filenames: list, path: str) -> list[Ima
   
 def initialize_search_image(search_image: str, path: str) -> Image:
   return Image(search_image, path)
-
-def get_accuracy(search_image: Image, n_most_similar_images: list[Image]):
-  """Calculate accuracy of n most similar images obtained"""
   
-  search_image_class = search_image.class_name()
+def get_classification(n_most_similar_images: list[Image], n: int) -> dict:
   similar_img_classes = [img.class_name() for img in n_most_similar_images]
 
-  print(search_image_class)
-  print(similar_img_classes)
+  class_frequencies = []
+  for similar_class, freq in zip(*np.unique(similar_img_classes, return_counts=True)):
+    class_frequencies.append({'class': similar_class, 'freq': freq, 'accuracy': freq * 100 / n})
 
-  matches = sum([1 for img_class in similar_img_classes if img_class == search_image_class])
-  return matches / (len(n_most_similar_images)-1) * 100
-  
-def get_classifications():
-  pass
+  return max(class_frequencies, key=lambda x: x['freq'])
+

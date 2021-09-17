@@ -31,7 +31,7 @@ class Image:
       'blue': 2
     }
 
-    return self.contents['rgb'][:, :, ch_dict[channel]][0] if channel != 'gray' else self.contents['gray'].ravel()
+    return self.contents['rgb'][:, :, ch_dict[channel]].ravel() if channel != 'gray' else self.contents['gray'].ravel()
 
   def create_histograms(self):
     gray_pixels = self.get_channel_contents('gray')
@@ -77,8 +77,8 @@ class Image:
     for img in imgs_to_be_searched:
       img.calc_pdfs_distances(self.pdfs, heuristic)
    
-    return sorted(imgs_to_be_searched, key=lambda img: img.distances['gray'])[:n]
-    # return sorted(imgs_to_be_searched, key=lambda img: (img.distances['red'] + img.distances['green'] + img.distances['blue']) / 3)[:n]
+    # return sorted(imgs_to_be_searched, key=lambda img: img.distances['gray'])[:n]
+    return sorted(imgs_to_be_searched, key=lambda img: (img.distances['red'] + img.distances['green'] + img.distances['blue']) / 3)[:n]
     
   def plot_image_w_histograms(self):  
     fig = plt.figure()
@@ -94,5 +94,5 @@ class Image:
     ax4.hist(self.get_channel_contents('green'), bins=self.histograms['green']['bin_edges'], color='green')
     ax5 = fig.add_subplot(gs[3, 1])
     ax5.hist(self.get_channel_contents('blue'), bins=self.histograms['blue']['bin_edges'], color='blue')
-    
+
     plt.show()
