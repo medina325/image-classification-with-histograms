@@ -25,8 +25,8 @@ if __name__ == "__main__":
     accuracy_ed = get_accuracy(search_image, ed_similar_imgs)
     accuracy_sc = get_accuracy(search_image, s_chi_similar_imgs)
       
-    print(f'Acurácia ED: {accuracy_ed}%')
-    print(f'Acurácia SC: {accuracy_sc}%')
+    print(f'Acurácia ED: {accuracy_ed:.2f}%')
+    print(f'Acurácia SC: {accuracy_sc:.2f}%')
 
   except FileNotFoundError as e:
     print(e)

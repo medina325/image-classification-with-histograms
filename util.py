@@ -37,3 +37,5 @@ def get_accuracy(search_image: Image, n_most_similar_images: list[Image]):
   matches = sum([1 for img_class in similar_img_classes if img_class == search_image_class])
   return matches / (len(n_most_similar_images)-1) * 100
   
+def get_classifications():
+  pass

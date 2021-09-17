@@ -24,21 +24,31 @@ class Image:
   def image_name(self) -> str:
     return self.filename.split('_')[1]
 
-  def create_histograms(self):
-    red_pixels = self.contents['rgb'][:, :, 0][0]
-    green_pixels = self.contents['rgb'][:, :, 1][0]
-    blue_pixels = self.contents['rgb'][:, :, 2][0]
+  def get_channel_contents(self, channel:str) -> list:
+    ch_dict = {
+      'red': 0,
+      'green': 1,
+      'blue': 2
+    }
 
-    gray_hist,_ = np.histogram(self.contents['gray'], bins=256, range=(0,1))
-    red_hist,_ = np.histogram(red_pixels, bins=256, range=(0,1))
-    green_hist,_ = np.histogram(green_pixels, bins=256, range=(0,1))
-    blue_hist,_ = np.histogram(blue_pixels, bins=256, range=(0,1))
+    return self.contents['rgb'][:, :, ch_dict[channel]][0] if channel != 'gray' else self.contents['gray'].ravel()
+
+  def create_histograms(self):
+    gray_pixels = self.get_channel_contents('gray')
+    red_pixels = self.get_channel_contents('red')
+    green_pixels = self.get_channel_contents('green')
+    blue_pixels = self.get_channel_contents('blue')
+
+    gray_hist, gray_bin_edges = np.histogram(gray_pixels, bins=256, range=(0, 1))
+    red_hist, red_bin_edges = np.histogram(red_pixels, bins=256, range=(0, 1))
+    green_hist, green_bin_edges = np.histogram(green_pixels, bins=256, range=(0, 1))
+    blue_hist, blue_bin_edges = np.histogram(blue_pixels, bins=256, range=(0, 1))
     
     return {
-      'gray': gray_hist,
-      'red': red_hist,
-      'green': green_hist,
-      'blue': blue_hist
+      'gray': {'freq': gray_hist, 'bin_edges': gray_bin_edges}, 
+      'red': {'freq': red_hist, 'bin_edges': red_bin_edges},
+      'green': {'freq': green_hist, 'bin_edges': green_bin_edges},
+      'blue': {'freq': blue_hist, 'bin_edges': blue_bin_edges}
     }
 
   def create_pdfs(self):
@@ -47,10 +57,10 @@ class Image:
     img_size = self.contents['gray'].size
 
     return {
-      'gray': self.histograms['gray'] / img_size,
-      'red': self.histograms['red'] / img_size,
-      'green': self.histograms['green'] / img_size,
-      'blue': self.histograms['blue'] / img_size
+      'gray': self.histograms['gray']['freq'] / img_size,
+      'red': self.histograms['red']['freq'] / img_size,
+      'green': self.histograms['green']['freq'] / img_size,
+      'blue': self.histograms['blue']['freq'] / img_size
     }
 
   def calc_pdfs_distances(self, img_pdfs, heuristic) -> None:
@@ -67,37 +77,22 @@ class Image:
     for img in imgs_to_be_searched:
       img.calc_pdfs_distances(self.pdfs, heuristic)
    
-    # return sorted(imgs_to_be_searched, key=lambda img: img.distances['gray'])[:n]
-    return sorted(imgs_to_be_searched, key=lambda img: (img.distances['red'] + img.distances['green'] + img.distances['blue']) / 3)[:n]
+    return sorted(imgs_to_be_searched, key=lambda img: img.distances['gray'])[:n]
+    # return sorted(imgs_to_be_searched, key=lambda img: (img.distances['red'] + img.distances['green'] + img.distances['blue']) / 3)[:n]
     
-  def plot_histograms(self):
-    # https://www.tutorialspoint.com/matplotlib/matplotlib_quick_guide.htm
-    x_axis = np.arange(256)
-
-    def make_subplot(ax, color, row, col):
-      ax = fig.add_subplot(gs[row, col])
-      ax.bar(x_axis, self.histograms[color], width=3, color=color)
-      # ax.hist(x=self.contents[:,:,0][0], bins=256, color=color)
-      ax.set_title(f'{color.capitalize()} Channel Histogram')
-      ax.set_ylabel('Frequency')
-      ax.tick_params(axis='y', labelbottom='off')
-      ax.set_xlabel('Pixel Intensity')
-      ax.tick_params(axis='x', labelbottom='off')
-
-    # plt.hist(x=self.contents[:, :, 1][0], bins='auto', color=color, alpha=0.7, rwidth=0.85)    
+  def plot_image_w_histograms(self):  
     fig = plt.figure()
-    fig.suptitle("Histograms")
-    gs = GridSpec(3, 2, figure=fig)
+    fig.suptitle("Image and it's Histograms")
+    gs = GridSpec(4, 2, figure=fig)
     ax1 = fig.add_subplot(gs[:, 0])
-    ax1.imshow(self.contents)
+    ax1.imshow(self.contents['rgb'])
     ax2 = fig.add_subplot(gs[0, 1])
+    ax2.hist(self.get_channel_contents('gray'), bins=self.histograms['gray']['bin_edges'], color='gray')
     ax3 = fig.add_subplot(gs[1, 1])
+    ax3.hist(self.get_channel_contents('red'), bins=self.histograms['red']['bin_edges'], color='red')
     ax4 = fig.add_subplot(gs[2, 1])
-    make_subplot(ax2, 'red', 0, 1)
-    make_subplot(ax3, 'green', 1, 1)
-    make_subplot(ax4, 'blue', 2, 1)
-    # make_subplot('red', (1,3,1))
-    # make_subplot('green', (1,3,2))
-    # make_subplot('blue', (1,3,3))
+    ax4.hist(self.get_channel_contents('green'), bins=self.histograms['green']['bin_edges'], color='green')
+    ax5 = fig.add_subplot(gs[3, 1])
+    ax5.hist(self.get_channel_contents('blue'), bins=self.histograms['blue']['bin_edges'], color='blue')
     
     plt.show()
