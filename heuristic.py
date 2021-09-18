@@ -34,11 +34,6 @@ class ChannelHeuristic(Enum):
   Each channel heuristic is a different combination of the channels"""
   
   GRAY = 0
-  R = 1
-  G = 2
-  B = 3
-  RG = 4
-  RB = 5
   RGBAVG = 6
 
 def selector(channel_heuristic: int, distances: dict) -> float:

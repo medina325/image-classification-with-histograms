@@ -16,12 +16,12 @@ if __name__ == "__main__":
     results = search_image.n_most_similar_imgs(imgs_to_be_searched, number_results)
     
     for result in results:
-      print(f"Distance Heuristic: {result['distance_heuristic'].value} - Channels Heuristic: {result['channel_heuristic']}")
-      print(f"Classification: {result['classification']} - Accuracy: {result['accuracy']:.2f} %.")
-      print(f" N Most Similar Images: {[img.filename for img in result['n_most_similar']]}.")
-      print(f" N Most Similar Classes: {[img.class_name() for img in result['n_most_similar']]}.")
+      print(f"Distance Heuristic: {result['distance_heuristic'].value} - Channel Heuristic: {result['channel_heuristic']}")
+      print(f"Classification: {result['classification']} - Accuracy: {result['accuracy']:.2f} %")
+      print(f" N Most Similar Images: {[img.filename for img in result['n_most_similar']]}")
+      print(f" N Most Similar Classes: {[img.class_name() for img in result['n_most_similar']]}")
 
-      print('-'*40)
+      print(40 * '-')
 
       save_result_figures(result, number_results)
 
