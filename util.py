@@ -1,4 +1,4 @@
-import numpy as np
+from matplotlib import pyplot as plt
 import os
 import sys
 from image import Image
@@ -13,7 +13,7 @@ def get_user_input() -> tuple:
             int(input("Digite o número de imagens semelhantes a serem buscadas:\n"))
             )
 
-def open_images_w_path(path: str) -> list[str]:
+def get_imgs_filenames(path: str) -> list[str]:
   if (not os.path.exists(path)):
     raise FileNotFoundError(f'Caminho {path} não existente.')
   
@@ -24,13 +24,16 @@ def initialize_images(search_image: str, filenames: list, path: str) -> list[Ima
   
 def initialize_search_image(search_image: str, path: str) -> Image:
   return Image(search_image, path)
-  
-def get_classification(n_most_similar_images: list[Image], n: int) -> dict:
-  similar_img_classes = [img.class_name() for img in n_most_similar_images]
 
-  class_frequencies = []
-  for similar_class, freq in zip(*np.unique(similar_img_classes, return_counts=True)):
-    class_frequencies.append({'class': similar_class, 'freq': freq, 'accuracy': freq * 100 / n})
+def save_result_figures(result: dict, n: int) -> None:
+  fig = plt.figure(figsize=(20, 20))
+  columns = n//2
+  rows = n
+  ax = []
 
-  return max(class_frequencies, key=lambda x: x['freq'])
-
+  for i, img in zip(range(n), result['n_most_similar']):
+    ax.append(fig.add_subplot(rows, columns, i + 1 ))
+    ax[-1].set_title('Class: ' + img.class_name())
+    plt.imshow(img.contents['rgb'])
+  plt.savefig(f"results_{result['distance_heuristic']}_and_{result['channel_heuristic']}.png")
+  # plt.show()
