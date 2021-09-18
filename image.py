@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-from heuristic import DistanceHeuristic as dh
+from heuristic import ChannelHeuristic as ch, DistanceHeuristic as dh, selector
 import os
 from skimage import io
 
@@ -63,22 +63,46 @@ class Image:
       'blue': self.histograms['blue']['freq'] / img_size
     }
 
-  def calc_pdfs_distances(self, img_pdfs, heuristic) -> None:
-      """Calculate Image's PDF's distances to another Image's PDFs"""
-      
-      if (heuristic == dh.ED):
-        self.distances = dh.euclidian_distance(img_pdfs, self.pdfs)
-      elif (heuristic == dh.SC):
-        self.distances = dh.square_chi(img_pdfs, self.pdfs)
+  def calc_pdfs_distances(self, img_pdfs) -> None:
+    """Calculate Image's PDF's distances to another Image's PDFs"""
+    
+    self.distances = {
+      dh.ED: dh.euclidian_distance(img_pdfs, self.pdfs),
+      dh.SC: dh.square_chi(img_pdfs, self.pdfs)
+    }
 
-  def n_most_similar_imgs(self, heuristic, imgs_to_be_searched: list['Image'], n: int) -> list['Image']:  
-    """Get n most similar images to this image"""
+  def n_most_similar_imgs(self, imgs_to_be_searched: list['Image'], n: int) -> list[dict]:  
+    """Return n most similar images combining every channel heuristics and distance heuristics"""
 
+    def get_classification(n_most_similar_imgs: list, n: int) -> dict:
+      similar_img_classes = [img.class_name() for img in n_most_similar_imgs]
+
+      classes_frequencies = []
+      for similar_class, freq in zip(*np.unique(similar_img_classes, return_counts=True)):
+        classes_frequencies.append({'class': similar_class, 'freq': freq, 'accuracy': freq * 100 / n})
+
+      max_class_frequency = max(classes_frequencies, key=lambda x: x['freq'])
+      return (max_class_frequency['class'], max_class_frequency['accuracy'])
+    
     for img in imgs_to_be_searched:
-      img.calc_pdfs_distances(self.pdfs, heuristic)
-   
-    # return sorted(imgs_to_be_searched, key=lambda img: img.distances['gray'])[:n]
-    return sorted(imgs_to_be_searched, key=lambda img: (img.distances['red'] + img.distances['green'] + img.distances['blue']) / 3)[:n]
+      img.calc_pdfs_distances(self.pdfs)
+
+    results = []
+    for d_h in [dh.ED, dh.SC]:
+      for c_h in [ch.GRAY, ch.RGBAVG]:
+        n_most_similar = sorted(imgs_to_be_searched, key=lambda img: selector(c_h, img.distances[d_h]))[:n]
+
+        classification, accuracy = get_classification(n_most_similar, n)
+
+        results.append({
+          'distance_heuristic': d_h,
+          'channel_heuristic': c_h,
+          'n_most_similar': n_most_similar,
+          'classification': classification,
+          'accuracy': accuracy
+        })
+
+    return results
     
   def plot_image_w_histograms(self):  
     fig = plt.figure()
