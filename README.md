@@ -12,6 +12,7 @@ The application is CLI based, and it's arguments are:
   python image_recovery.py path search_image n
 ```
 Where "path" is where the images are stored (including the search image), "search_image" is the fullname of the search image and n is the number of most similar images to be recovered.
+Obs.: right now the only path is Vistex and this folder has to be downloaded and extracted from the zip found in this [link](https://www.dropbox.com/s/thh2axm9z4g68kd/Vistex.zip?dl=0).
 
 ## Results:
 The results are gonna be outputed in the same terminal where the application was executed, giving details such as: classification, accuracy, distance heuristic, channel heuristic, n most similar images and it's classes.
