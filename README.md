@@ -1,4 +1,4 @@
-# Image Recovery with Histograms
+# Image Classification with Histograms
 First project from the Computer Vision discipline, that aims to recover the N most similar images to a given search image, based on it's histograms.
 
 ## Description:

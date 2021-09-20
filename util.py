@@ -29,13 +29,21 @@ def save_result_figures(result: dict, n: int) -> None:
   if (not os.path.exists('results')):
     os.mkdir('results')
 
-  fig = plt.figure(figsize=(20, 20))
-  columns = n//2
-  rows = n
-  ax = []
+  fig = plt.figure(figsize=(15, 15))
+  axes = []
+  rows = columns = n//2
 
   for i, img in zip(range(n), result['n_most_similar']):
-    ax.append(fig.add_subplot(rows, columns, i + 1 ))
-    ax[-1].set_title('Class: ' + img.class_name())
+    axes.append(fig.add_subplot(rows, columns, i + 1 ))
+    axes[-1].set_title('Class: ' + img.class_name())
     plt.imshow(img.contents['rgb'])
+  
   plt.savefig(f"results/results_{result['distance_heuristic']}_and_{result['channel_heuristic']}.png")
+
+def print_result(result: dict) -> None:
+  print(f"Distance Heuristic: {result['distance_heuristic'].value} - Channel Heuristic: {result['channel_heuristic']}")
+  print(f"Classification: {result['classification']} - Accuracy: {result['accuracy']:.2f} %")
+  print(f" N Most Similar Images: {[img.filename for img in result['n_most_similar']]}")
+  print(f" N Most Similar Classes: {[img.class_name() for img in result['n_most_similar']]}")
+
+  print(40 * '-')

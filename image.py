@@ -6,7 +6,7 @@ import os
 from skimage import io
 
 class Image:
-  """Represents an image with all information required for the problem"""
+  """Represents an image with all crucial information for the problem"""
   
   def __init__(self, filename: str, path: str) -> None:
     self.filename = filename
@@ -71,8 +71,11 @@ class Image:
       dh.SC: dh.square_chi(img_pdfs, self.pdfs)
     }
 
-  def n_most_similar_imgs(self, imgs_to_be_searched: list['Image'], n: int) -> list[dict]:  
-    """Return n most similar images combining every channel heuristics and distance heuristics"""
+  def n_most_similar_imgs(self, imgs_to_be_searched: list['Image'], c_h, d_h, n: int) -> list['Image']:
+    return sorted(imgs_to_be_searched, key=lambda img: selector(c_h, img.distances[d_h]))[:n]
+
+  def get_results(self, imgs_to_be_searched: list['Image'], n: int) -> list[dict]:
+    """Return a summary of all the results obtained from the combination of every channel heuristics and distance heuristics"""
 
     def get_classification(n_most_similar_imgs: list, n: int) -> dict:
       similar_img_classes = [img.class_name() for img in n_most_similar_imgs]
@@ -88,9 +91,12 @@ class Image:
       img.calc_pdfs_distances(self.pdfs)
 
     results = []
-    for d_h in [dh.ED, dh.SC]:
-      for c_h in [ch.GRAY, ch.RGBAVG]:
-        n_most_similar = sorted(imgs_to_be_searched, key=lambda img: selector(c_h, img.distances[d_h]))[:n]
+    distance_heuristic_list = [a for a in dh]
+    channel_heuristic_list = [b for b in ch]
+
+    for d_h in distance_heuristic_list:
+      for c_h in channel_heuristic_list:
+        n_most_similar = self.n_most_similar_imgs(imgs_to_be_searched, c_h, d_h, n)
 
         classification, accuracy = get_classification(n_most_similar, n)
 
